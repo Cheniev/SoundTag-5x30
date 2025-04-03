@@ -1,67 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Звук 5x30 после касания</title>
+    <title>Полноэкранная кнопка для звука</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #f0f0f0;
-            font-family: Arial, sans-serif;
-            touch-action: manipulation; /* Для быстрого отклика на касания */
+            box-sizing: border-box;
         }
-        .play-button {
-            padding: 20px 40px;
+        body {
+            font-family: Arial, sans-serif;
+            touch-action: manipulation; /* Убирает задержку 300ms на мобильных */
+        }
+        #fullscreenButton {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: #4CAF50;
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 20px;
+            font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            transition: background 0.3s;
         }
-        .play-button:active {
+        #fullscreenButton:active {
             background: #45a049;
+        }
+        #fullscreenButton.playing {
+            background: #2196F3;
+        }
+        #fullscreenButton.error {
+            background: #f44336;
         }
     </style>
 </head>
 <body>
-    <button class="play-button" id="playButton">▶️ Включить звук</button>
+    <!-- Кнопка на весь экран -->
+    <button id="fullscreenButton">▶️ КОСНИСЬ ЭКРАНА,<br>затем нажми для звука</button>
 
     <!-- Скрытый аудиоплеер -->
     <audio id="sound" preload="auto">
-        <!-- Прямая ссылка на MP3 с MyInstants -->
         <source src="https://www.myinstants.com/media/sounds/5x30.mp3" type="audio/mpeg">
+        <!-- Если ссылка не работает, замени её на свою -->
     </audio>
 
     <script>
-        const playButton = document.getElementById('playButton');
+        const button = document.getElementById('fullscreenButton');
         const sound = document.getElementById('sound');
+        let isUserInteracted = false;
 
-        // Обработчики для ПК (click) и телефонов (touchstart)
-        playButton.addEventListener('click', playSound);
-        playButton.addEventListener('touchstart', playSound, { passive: true });
+        // 1. Разблокировка аудио при первом касании ЛЮБОГО места страницы
+        function handleFirstInteraction() {
+            isUserInteracted = true;
+            button.textContent = "🔊 НАЖМИ ДЛЯ ЗВУКА";
+            document.removeEventListener('click', handleFirstInteraction);
+            document.removeEventListener('touchstart', handleFirstInteraction);
+        }
 
-        function playSound() {
+        // 2. Вешаем обработчики на весь документ
+        document.addEventListener('click', handleFirstInteraction);
+        document.addEventListener('touchstart', handleFirstInteraction, { passive: true });
+
+        // 3. Воспроизведение при нажатии на кнопку
+        button.addEventListener('click', () => {
+            if (!isUserInteracted) return;
+            
             sound.play()
                 .then(() => {
-                    playButton.textContent = "🔊 Звук играет!";
-                    playButton.style.background = "#2196F3";
+                    button.textContent = "🎵 ИГРАЕТ 5x30";
+                    button.classList.add('playing');
                 })
                 .catch(error => {
-                    playButton.textContent = "❌ Ошибка: " + error.message;
-                    playButton.style.background = "#f44336";
+                    button.textContent = "❌ ОШИБКА: " + error.message;
+                    button.classList.add('error');
                 });
-            
-            // Отключаем обработчики после первого касания
-            playButton.removeEventListener('click', playSound);
-            playButton.removeEventListener('touchstart', playSound);
-        }
+        });
     </script>
 </body>
 </html>
