@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Звук после касания</title>
+    <title>Звук 5x30 после касания</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
@@ -13,43 +13,50 @@
             height: 100vh;
             background: #f0f0f0;
             font-family: Arial, sans-serif;
+            touch-action: manipulation; /* Для быстрого отклика на касания */
         }
         .play-button {
-            padding: 15px 30px;
+            padding: 20px 40px;
             background: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 18px;
+            border-radius: 10px;
+            font-size: 20px;
             cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        .hidden {
-            display: none;
+        .play-button:active {
+            background: #45a049;
         }
     </style>
 </head>
 <body>
-    <button class="play-button" id="playButton">Коснись для звука</button>
-    
-    <!-- Плеер MyInstants (скрытый) -->
-    <iframe id="soundFrame" width="0" height="0" src="https://www.myinstants.com/instant/5x30-78034/embed/" frameborder="0" scrolling="no" class="hidden"></iframe>
+    <button class="play-button" id="playButton">▶️ Включить звук</button>
+
+    <!-- Скрытый аудиоплеер -->
+    <audio id="sound" preload="auto">
+        <!-- Прямая ссылка на MP3 с MyInstants -->
+        <source src="https://www.myinstants.com/media/sounds/5x30.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         const playButton = document.getElementById('playButton');
-        const soundFrame = document.getElementById('soundFrame');
+        const sound = document.getElementById('sound');
 
-        // Обработчик для клика (ПК) и касания (телефоны)
+        // Обработчики для ПК (click) и телефонов (touchstart)
         playButton.addEventListener('click', playSound);
-        playButton.addEventListener('touchstart', playSound);
+        playButton.addEventListener('touchstart', playSound, { passive: true });
 
         function playSound() {
-            // Показываем и обновляем iframe для воспроизведения
-            soundFrame.classList.remove('hidden');
-            soundFrame.src = soundFrame.src; // Перезагружаем iframe
-            
-            // Меняем текст кнопки
-            playButton.textContent = "Звук включен!";
-            playButton.style.background = "#2196F3";
+            sound.play()
+                .then(() => {
+                    playButton.textContent = "🔊 Звук играет!";
+                    playButton.style.background = "#2196F3";
+                })
+                .catch(error => {
+                    playButton.textContent = "❌ Ошибка: " + error.message;
+                    playButton.style.background = "#f44336";
+                });
             
             // Отключаем обработчики после первого касания
             playButton.removeEventListener('click', playSound);
